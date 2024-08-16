@@ -21,10 +21,12 @@ import { BotAvatar } from "@/components/bot-avatar";
 import ReactMarkdown from "react-markdown";
 import { useProModal } from "@/hooks/use-pro-modal";
 import { toast } from "react-hot-toast";
+import { useTheme } from "next-themes";
 
 const Code = () => {
   const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
   const router = useRouter();
+  const { theme } = useTheme();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -65,7 +67,7 @@ const Code = () => {
         iconColor="text-green-700"
         bgColor="bg-green-700/10"
       />
-      <div className="px-4 lg:px-8">
+      <div className="px-4 lg:px-8 p-8">
         <div>
           <Form {...form}>
             <form
@@ -112,9 +114,11 @@ const Code = () => {
                 key={message.content}
                 className={cn(
                   "p-8 w-full flex items-start gap-x-8 rounded-lg",
-                  message.role === "user"
+                  message.role === "user" && theme === "light"
                     ? "bg-white border border-black/10"
-                    : "bg-muted"
+                    : message.role !== "user"
+                    ? "bg-muted border border-white/10"
+                    : "bg-black-30 border border-white/10"
                 )}
               >
                 {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
