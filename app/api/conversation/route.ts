@@ -55,9 +55,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function makeOpenAIRequest(
-  messages: ChatCompletionRequestMessage[]
-) {
+async function makeOpenAIRequest(messages: ChatCompletionRequestMessage[]) {
   const maxRetries = 5;
   let attempt = 0;
 
