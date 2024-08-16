@@ -25,6 +25,7 @@
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.14",
     "axios": "^1.4.0",
+    "bufferutil": "^4.0.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "crisp-sdk-web": "^1.0.21",
@@ -49,6 +50,7 @@
     "tailwindcss-animate": "^1.0.6",
     "typescript": "5.1.6",
     "typewriter-effect": "^2.20.1",
+    "utf-8-validate": "^6.0.4",
     "zod": "^3.21.4",
     "zustand": "^4.4.1"
   },
