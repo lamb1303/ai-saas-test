@@ -73,7 +73,7 @@ const Sidebar = ({ apiLimitCount = 0, isPro = false }: SidebarProps) => {
       <div className="px-3 py-2 flex-1">
         <Link href={"/dashboard"} className="flex items-center pl-3 mb-14">
           <div className="relative w-8 h-8 mr-4">
-            <Image fill alt="logo" src={"/logo.png"} sizes="9"></Image>
+            <Image fill alt="logo" src={"/spin.png"} sizes="9"></Image>
           </div>
           <h1 className={cn("text-2xl font-bold", monserrat.className)}>
             Genius

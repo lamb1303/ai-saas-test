@@ -30,14 +30,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const response = await replicate.run(
-      "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
-      {
-        input: {
-          prompt,
-        },
-      }
-    );
+    const response = await await makeReplicateRequest(prompt);
     if (!isPro) {
       await increaseApiLimit();
     }
@@ -46,4 +39,36 @@ export async function POST(req: Request) {
     console.log(error);
     return new NextResponse("Internal error", { status: 500 });
   }
+}
+
+async function makeReplicateRequest(prompt: string) {
+  const maxRetries = 5;
+  let attempt = 0;
+
+  while (attempt < maxRetries) {
+    try {
+      const response = await replicate.run(
+        "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
+        {
+          input: {
+            prompt_a: prompt,
+          },
+        }
+      );
+      return response;
+    } catch (error: any) {
+      if (error) {
+        attempt++;
+        const retryAfter = error.response.headers["retry-after"];
+        const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 2000; // wait time in milliseconds
+        console.log(
+          `Rate limit hit ${attempt}. Retrying in ${waitTime / 1000} seconds...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error("Max retries reached. Please try again later.");
 }

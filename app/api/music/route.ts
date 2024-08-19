@@ -3,6 +3,7 @@ import Replicate from "replicate";
 import { NextResponse } from "next/server";
 import { increaseApiLimit, checkApiLimit } from "@/lib/api-limit";
 import { checkSubscription } from "@/lib/subscription";
+import { AnyCnameRecord } from "dns";
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN!,
 });
@@ -29,14 +30,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const response = await replicate.run(
-      "riffusion/riffusion:8cf61ea6c56afd61d8f5b9ffd14d7c216c0a93844ce2d82ac1c9ecc9c7f24e05",
-      {
-        input: {
-          prompt_a: prompt,
-        },
-      }
-    );
+    const response = await makeReplicateRequest(prompt);
 
     if (!isPro) {
       await increaseApiLimit();
@@ -46,4 +40,36 @@ export async function POST(req: Request) {
     console.log(error);
     return new NextResponse("Internal error", { status: 500 });
   }
+}
+
+async function makeReplicateRequest(prompt: string) {
+  const maxRetries = 5;
+  let attempt = 0;
+
+  while (attempt < maxRetries) {
+    try {
+      const response = await replicate.run(
+        "riffusion/riffusion:8cf61ea6c56afd61d8f5b9ffd14d7c216c0a93844ce2d82ac1c9ecc9c7f24e05",
+        {
+          input: {
+            prompt_a: prompt,
+          },
+        }
+      );
+      return response;
+    } catch (error: any) {
+      if (error) {
+        attempt++;
+        const retryAfter = error.response.headers["retry-after"];
+        const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 2000; // wait time in milliseconds
+        console.log(
+          `Rate limit hit ${attempt}. Retrying in ${waitTime / 1000} seconds...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error("Max retries reached. Please try again later.");
 }
